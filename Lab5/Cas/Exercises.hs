@@ -247,16 +247,22 @@ solveAndCountNrc gr =
 --    (i.e. they are ignore and can be left empty)
 -- =============================================================================
 exercise4 = do
+  presetEmptyProblems emptyblocks1
   presetEmptyProblems emptyblocks2
   presetEmptyProblems emptyblocks3
   presetEmptyProblems emptyblocks4
   presetEmptyProblems emptyblocks5
+  presetEmptyProblems emptyblocks6
+  presetEmptyProblems emptyblocks7
 
 -- Block definitions
+emptyblocks1 = filter(\x -> length x == 8) (powerset blocksALL) -- lenght is 8, 1 block is empty
 emptyblocks2 = filter(\x -> length x == 7) (powerset blocksALL) -- lenght is 7, 2 blocks are empty
 emptyblocks3 = filter(\x -> length x == 6) (powerset blocksALL) -- lenght is 6, 3 blocks are empty
 emptyblocks4 = filter(\x -> length x == 5) (powerset blocksALL) -- lenght is 5, 4 blocks are empty
 emptyblocks5 = filter(\x -> length x == 4) (powerset blocksALL) -- lenght is 4, 5 blocks are empty
+emptyblocks6 = filter(\x -> length x == 3) (powerset blocksALL) -- lenght is 3, 6 blocks are empty
+emptyblocks7 = filter(\x -> length x == 3) (powerset blocksALL) -- lenght is 2, 8 blocks are empty
 
 -- Walk through the possibilities using presetEmptyProblem
 presetEmptyProblems :: [[[(Row,Column)]]] -> IO ()
