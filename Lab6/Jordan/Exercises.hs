@@ -1,6 +1,6 @@
 module Lab6 where
 
-import Control.Monad 
+import Control.Monad
 import Lecture6
 import Data.List
 import Data.Bits
@@ -36,7 +36,7 @@ main = do
 -- =============================================================================
 -- Exercise 1 :: Time spent: +- 5 hours
 -- While implementing multiple versions of the exM function I came acros a package
--- that implemented the function if the squaring method. 
+-- that implemented the function if the squaring method.
 -- =============================================================================
 
 exercise1 = do
@@ -49,54 +49,53 @@ exM' b e m = loop e b 1
     where sq x          = (x * x) `mod` m
           loop 0 _  a = a `mod` m
           loop i s a = loop (i `shiftR` 1) (sq s) (if odd i then a * s else a)
-  
+
 exM'' 0 _ m = 1 `mod` m
 exM'' b e m = f e b 1
-      where 
+      where
         f e' b' r | e' <= 0 = r
                 | ((e' `mod` 2) == 1) = f (e' `shiftR` 1) ((b' * b') `mod` m) ((r * b') `mod` m)
                 | otherwise = f (e' `shiftR` 1) ((b' * b') `mod` m) (r)
- 
+
 -- =============================================================================
 -- Exercise 2 :: Time spent: +- 2 hours
 -- A fair test should apply the same inputs to each function
 -- It first generate 3 list of input and use them with both functions
 -- =============================================================================
 exercise2 = do
-    bs <- replicateM  10000000 (randomRIO (400, 10000 :: Integer))
-    es <- replicateM  10000000 (randomRIO (400, 10000 :: Integer))
-    ms <- replicateM  10000000 (randomRIO (400, 10000 :: Integer))
-    start <- getTime Monotonic
-    print $ last $  last $ doCalculation' expM bs es ms
-    end <- getTime Monotonic
-    
-    start' <- getTime Monotonic
-    print $ last $  last $ doCalculation' exM'' bs es ms
-    end' <- getTime Monotonic
-    fprint (timeSpecs) start end
-    fprint (timeSpecs) start' end'
+    bs <- runRepl
+    es <- runRepl
+    ms <- runRepl
+    package <- doRun (doCalculation' exM'' bs es ms)
+    ownImplementation <- doRun (doCalculation' exM' bs es ms)
+    standardImplementation <- doRun (doCalculation' exM bs es ms)
+    reportTime "package variant" package
+    reportTime "optimized variant" ownImplementation
+    reportTime "standard implementation" standardImplementation
 
+reportTime str (start,end) = do
+  fprint (timeSpecs) start end
+  putStrLn $ " when using the " ++ str
 
-doCalculation = do
-  b <- randomRIO (1, 10000)
-  e <- randomRIO (1, 10000)
-  m <- randomRIO (1, 10000)
-  evaluate (exM b e m)
-
+doRun f = do
+  start <- getTime Monotonic
+  print f
+  end <- getTime Monotonic
+  return (start,end)
 
 doCalculation' :: (Integer -> Integer -> Integer -> Integer) -> [Integer] -> [Integer] -> [ Integer] ->[[Integer]]
 doCalculation' fn bs es ms = do
   let z = zip3 bs es ms
   let ys = map (runFn) z
   return ys
-  where 
+  where
     runFn (b, e , m) = fn b e m
-  
+
+runRepl = replicateM 10 randomInt
 
 randomInt = do
-    x <- randomRIO (0, 10000 :: Int)
+    x <- randomRIO (400, 10000 :: Integer)
     return x
-
 -- =============================================================================
 -- Exercise 3 :: Time spent: +- 20 minutes
 -- Since every whole number over 1 is either a composite number or a prime number
@@ -117,6 +116,7 @@ exercise4 = do
   k1 <- testFer (testFermatKn 1)
   k2 <- testFer (testFermatKn 2)
   k3 <- testFer (testFermatKn 3)
+
   putStrLn " Exercise 4: Smallest composite number that passes Fermat test"
   putStrLn " K = 1 "
   print k1
@@ -124,13 +124,24 @@ exercise4 = do
   print k2
   putStrLn " K = 3 "
   print k3
-  
-testFer tk = do
-  x <- replicateM  1 tk
-  let sorted = sort x 
+
+testFer x = do
+    avg <-  testFerAvg x
+    small <- testFerSmall x
+    return (small , avg)
+
+testFerAvg :: IO Integer -> IO Integer
+testFerAvg tk = do
+  x <- replicateM 100 tk
+  let avg = (sum x) `div` 100
+  return avg
+
+testFerSmall tk = do
+  x <- replicateM 100 tk
+  let sorted = sort x
   return $ head sorted
 
-testFermatKn n= foolFermat' n composites
+testFermatKn n = foolFermat' n composites
 
 foolFermat' :: Int -> [Integer] -> IO Integer
 foolFermat' k (x:xs) = do
@@ -161,10 +172,10 @@ exercise5 = do
 testFermatCarmichaelKn n= foolFermat' n carmichael
 
 carmichael :: [Integer]
-carmichael = [ (6*k+1)*(12*k+1)*(18*k+1) | 
-          k <- [2..], 
-          prime (6*k+1), 
-          prime (12*k+1), 
+carmichael = [ (6*k+1)*(12*k+1)*(18*k+1) |
+          k <- [2..],
+          prime (6*k+1),
+          prime (12*k+1),
           prime (18*k+1) ]
 
 -- =============================================================================
@@ -191,15 +202,16 @@ testMR k (x:xs) = do
     if z then
       return x
     else
-      testMR k xs  
+      testMR k xs
 
 -- =============================================================================
 -- Exercise 6 (2) :: Time spent: +- 15 minutes
 -- I manage to get to 607 easily but then the program hangs.
 -- =============================================================================
 exercise62 = do
+  print ()
   filterM ((primeMR 1).(\x -> ((2^x) - 1 ))) $ take 150 primes
-    
+
 -- =============================================================================
 -- Exercise 7 :: Time spent: +-
 -- =============================================================================
