@@ -71,3 +71,12 @@ update f (x, y) = \z -> if x == z then y else f z
 updates :: Eq a => (a -> b) -> [(a, b)] -> a -> b
 updates = foldl update
 
+
+while :: ( a-> Bool) -> (a->a) -> a -> a
+while = until . (not .)
+
+whiler :: (a -> Bool) -> (a -> a) -> (a -> b) -> a -> b
+whiler p f r = while p f # r
+
+fix :: (a -> a) -> a
+fix f = f (fix f)
